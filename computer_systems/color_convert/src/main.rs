@@ -36,77 +36,58 @@ fn hex_to_rgb(color: &str) -> String {
 
     match hex.len() {
         3 => {
-            let mut hex_nums = vec![];
-
-            for i in (0..hex.len()).step_by(1) {
-                let current = String::from(&hex[i..i + 1]);
-                let current = current.clone() + &current;
-
-                let decimal = convert_hex_to_decimal(&current).to_string();
-                hex_nums.push(decimal);
-            }
-
-            format!("rgb({});", hex_nums.join(" "))
+            let doubled: String = hex
+                .chars()
+                .map(|char| format!("{}{}", char, char))
+                .collect();
+            convert_to_rgb(&doubled)
         }
         4 => {
-            let mut hex_nums = vec![];
-
-            for i in (0..hex.len()).step_by(1) {
-                let current = String::from(&hex[i..i + 1]);
-                let current = current.clone() + &current;
-
-                let decimal = convert_hex_to_decimal(&current);
-                hex_nums.push(decimal);
-            }
-
-            let opacity = hex_nums.pop().unwrap();
-            let opacity_in_percentage: f32 = (opacity as f32) / 255.0;
-
-            format!(
-                "rgba({} / {:.5});",
-                hex_nums
-                    .iter()
-                    .map(|v| v.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" "),
-                opacity_in_percentage
-            )
+            let doubled: String = hex
+                .chars()
+                .map(|char| format!("{}{}", char, char))
+                .collect();
+            convert_to_rgba(&doubled)
         }
-        6 => {
-            let mut hex_nums = vec![];
-
-            for i in (0..hex.len()).step_by(2) {
-                let current = &hex[i..i + 2];
-                let decimal = convert_hex_to_decimal(current).to_string();
-                hex_nums.push(decimal);
-            }
-
-            format!("rgb({});", hex_nums.join(" "))
-        }
-        8 => {
-            let mut hex_nums = vec![];
-
-            for i in (0..hex.len()).step_by(2) {
-                let current = &hex[i..i + 2];
-                let decimal = convert_hex_to_decimal(current);
-                hex_nums.push(decimal);
-            }
-
-            let opacity = hex_nums.pop().unwrap();
-            let opacity_in_percentage: f32 = (opacity as f32) / 255.0;
-
-            format!(
-                "rgba({} / {:.5});",
-                hex_nums
-                    .iter()
-                    .map(|v| v.to_string())
-                    .collect::<Vec<String>>()
-                    .join(" "),
-                opacity_in_percentage
-            )
-        }
+        6 => convert_to_rgb(hex),
+        8 => convert_to_rgba(hex),
         _ => panic!("not valid hex"),
     }
+}
+
+fn convert_to_rgb(hex: &str) -> String {
+    let mut hex_nums = vec![];
+
+    for i in (0..hex.len()).step_by(2) {
+        let current = &hex[i..i + 2];
+        let decimal = convert_hex_to_decimal(current).to_string();
+        hex_nums.push(decimal);
+    }
+
+    format!("rgb({});", hex_nums.join(" "))
+}
+
+fn convert_to_rgba(hex: &str) -> String {
+    let mut hex_nums = vec![];
+
+    for i in (0..hex.len()).step_by(2) {
+        let current = &hex[i..i + 2];
+        let decimal = convert_hex_to_decimal(current);
+        hex_nums.push(decimal);
+    }
+
+    let opacity = hex_nums.pop().unwrap();
+    let opacity_in_percentage: f32 = (opacity as f32) / 255.0;
+
+    format!(
+        "rgba({} / {:.5});",
+        hex_nums
+            .iter()
+            .map(|v| v.to_string())
+            .collect::<Vec<String>>()
+            .join(" "),
+        opacity_in_percentage
+    )
 }
 
 fn convert_hex_to_decimal(hex: &str) -> u8 {
@@ -148,9 +129,30 @@ mod tests {
     use crate::hex_to_rgb;
 
     #[test]
-    fn it_converts_hex_to_rgb() {
-        let rgb = hex_to_rgb("#00ff00");
+    fn it_converts_6_hex_to_rgb() {
+        let rgb = hex_to_rgb("#00ff00;");
 
-        assert_eq!(rgb, "rgb(0 255 0)")
+        assert_eq!(rgb, "rgb(0 255 0);")
+    }
+
+    #[test]
+    fn it_converts_8_hex_to_rgb() {
+        let rgba = hex_to_rgb("#0000FFC0;");
+
+        assert_eq!(rgba, "rgba(0 0 255 / 0.75294);")
+    }
+
+    #[test]
+    fn it_converts_3_hex_to_rgb() {
+        let rgba = hex_to_rgb("#123;");
+
+        assert_eq!(rgba, "rgb(17 34 51);")
+    }
+
+    #[test]
+    fn it_converts_4_hex_to_rgb() {
+        let rgba = hex_to_rgb("#00f8;");
+
+        assert_eq!(rgba, "rgba(0 0 255 / 0.53333);")
     }
 }

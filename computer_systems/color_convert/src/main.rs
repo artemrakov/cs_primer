@@ -96,32 +96,10 @@ fn convert_hex_to_decimal(hex: &str) -> u8 {
 
     for char in hex.chars() {
         power -= 1;
-        sum += convert_hex_symbol(&char) * 16_u8.pow(power);
+        sum += u8::from_str_radix(&char.to_string(), 16).unwrap() * 16_u8.pow(power);
     }
 
     sum
-}
-
-fn convert_hex_symbol(hex: &char) -> u8 {
-    match hex {
-        '0' => 0,
-        '1' => 1,
-        '2' => 2,
-        '3' => 3,
-        '4' => 4,
-        '5' => 5,
-        '6' => 6,
-        '7' => 7,
-        '8' => 8,
-        '9' => 9,
-        'a' => 10,
-        'b' => 11,
-        'c' => 12,
-        'd' => 13,
-        'e' => 14,
-        'f' => 15,
-        _ => panic!("Not supported hex"),
-    }
 }
 
 #[cfg(test)]
